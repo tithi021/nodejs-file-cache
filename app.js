@@ -1,70 +1,144 @@
+var express = require('express');
+var router = express.Router();
 const fs = require('fs');
-const path = require('path');
 
-const randomString = (len) => {
-  const charSet = 'abcdefghijklmnopqrstuvwxyz_';
-  var randomString = '';
-  for (var i = 0; i < len; i++) {
-    var randomPoz = Math.floor(Math.random() * charSet.length);
-    randomString += charSet.substring(randomPoz, randomPoz + 1);
-  }
-  return randomString;
+// Check is Array
+const isArray = (data) => {
+  if (data !== null && (data instanceof Array || data instanceof Function))
+    return true
+  return false
 }
 
-exports.generateFilename = (arg) => {
-  if (arg) {
-    const objVal = Object.values(arg);
-    let _key = '';
-    if (objVal.length > 0) {
-      objVal.map((value, key) => {
-        objVal.length - 1 == key ? _key = _key + value : _key = value + '-' + _key;
-      })
-      return _key;
-    }
-  } else {
-    const randomStr = randomString(25);
-    return randomStr;
-  }
-}
-
-exports.isFileExist = (dir, filename) => {
+const isExist = (key) => {
   let filepath = '';
-  if (dir && filename) {
-    filepath = `./${dir}/${filename}`;
+
+  if (key) {
+    filepath = `./cache/${key}`;
+
     if (fs.existsSync(filepath)) {
-      return {
-        filepath: filepath,
-        succss: true
-      }
+      return true;
     } else {
-      return {
-        filepath: filepath,
-        succss: false
-      }
+      return false;
     }
   } else {
-    throw console.error('Please provide both directory and filename.')
+    throw console.error('Please provide the key.');
   }
 }
 
-exports.createCache = (dir, filename, content) => {
-  const dirpath = path.join(__dirname, `../../${dir}`);
+const get = (key) => {
 
-  if(!fs.existsSync(dirpath)) {
+  const exist = isExist(key);
+
+  if (exist) {
+
+    const filepath = process.cwd() + `/cache/${key}`;
+
+    const data = fs.readFileSync(filepath, 'utf8');
+
+    let promise = new Promise((resolve, reject) => {
+
+      resolve(data);
+
+      reject(new Error('Something wrong!'));
+    });
+
+    return promise;
+  } else {
+    return null;
+  }
+}
+
+const multiGet = (keys) => {
+
+  let arrs = [];
+
+  if (isArray(keys)) {
+
+    keys.map(key => {
+
+      const exist = isExist(key);
+
+      if (exist) {
+
+        const filepath = `./cache/${key}`;
+
+        const data = fs.readFileSync(filepath, 'utf8');
+
+        new Promise((resolve, reject) => {
+
+          arrs.push(Object.assign({ key: key, value: resolve(data) }));
+
+          reject(new Error('Something wrong!'));
+        });
+
+      } else {
+        arrs.push(Object.assign({ key: key, value: null }));
+      }
+    })
+
+    return arrs;
+
+  } else {
+    throw console.error('Please provide list of array keys');
+  }
+}
+
+const set = (key, content) => {
+
+  const dirpath = process.cwd() + `/cache`;
+
+  if (!fs.existsSync(dirpath)) {
     fs.mkdirSync(dirpath, 0777);
   }
-  
-  fs.writeFile(`${dirpath}/${filename}`, content, (err) => {
+
+  fs.writeFile(`${dirpath}/${key}`, content, (err) => {
     if (err) throw err;
     return console.log("The file was succesfully saved!");
   });
 }
 
-exports.getCache = (filepath) => {
-  const data = fs.readFileSync(filepath, 'utf8');
-  let promise = new Promise(function(resolve, reject) {
-    resolve(data);
-    reject(new Error('Filepath not found'));
+const multiSet = (items) => {
+  if (isArray(items)) {
+    items.map(item => {
+
+      const dirpath = process.cwd() + `/cache`;
+
+      if (!fs.existsSync(dirpath)) {
+        fs.mkdirSync(dirpath, 0777);
+      }
+
+      fs.writeFile(`${dirpath}/${item.key}`, item.value, (err) => {
+        if (err) throw err;
+        return console.log("The file was succesfully saved!");
+      });
+    })
+  } else {
+    throw console.error('Please provide list of array items');
+  }
+}
+
+const remove = (key) => {
+
+  const filepath = process.cwd() + `/cache/` + key;
+
+  fs.unlink(filepath, (err) => {
+    if (err) return console.log(err);
+
+    return console.log('File deleted successfully.');
   });
-  return promise;
+}
+
+const removeAll = () => {
+
+  const filepath = process.cwd() + `/cache`;
+
+  fs.readdir(filepath, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      fs.unlink(`${filepath}/${file}`, err => {
+        if (err) throw err;
+      });
+    }
+  });
 }
