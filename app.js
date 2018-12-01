@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const fs = require('fs');
+const path = require('path');
 
 // Check is Array
 const isArray = (data) => {
@@ -111,6 +112,15 @@ const multiSet = (items) => {
         if (err) throw err;
         return console.log("The file was succesfully saved!");
       });
+
+      const date_provided = new Date().setMinutes(new Date().getMinutes() + 1);
+      console.log(date_provided)
+      const time_remaining = (date_provided) => new Date(date_provided) - new Date();
+      console.log(time_remaining)
+
+      let timeOuts = []; // We create an array of timeouts in case we want to cancel one later
+      const timer = setTimeout(() => removeAll(), time_remaining(date_provided));
+      timeOuts.push(timer);
     })
   } else {
     throw console.error('Please provide list of array items');
@@ -142,3 +152,4 @@ const removeAll = () => {
     }
   });
 }
+
