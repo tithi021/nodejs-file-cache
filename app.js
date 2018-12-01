@@ -1,5 +1,4 @@
-var express = require('express');
-var router = express.Router();
+
 const fs = require('fs');
 const path = require('path');
 
@@ -84,8 +83,71 @@ const multiGet = (keys) => {
   }
 }
 
-const set = (key, content) => {
+const timeRemaining = (num, unit) => {
 
+  const current = new Date();
+
+  let expireDate;
+
+  // const oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+
+  // var firstDate = new Date(2008,01,12);
+  // var secondDate = new Date(2008,01,22);
+
+  // var diffDays = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
+
+
+  if(unit == 'year') {
+
+    expireDate = current.setFullYear(current.getFullYear() + num);
+
+    console.log(expireDate)
+
+  } else if(unit == 'month') {
+
+    expireDate = current.setMonth(current.getMonth() + num);
+
+    console.log(expireDate)
+
+  } else if(unit == 'week') {
+
+    console.log(current);
+
+    const thisWeek = current.getWeek();
+
+    console.log(thisWeek);
+
+    const futureWeek = eval(num - thisWeek);
+    current.setDate(current.getDate() + eval(7 * futureWeek));
+    
+    const rangeIsFrom = eval(d1.getMonth()+1) +"/" + d1.getDate() + "/" + d1.getFullYear();
+    d1.setDate(d1.getDate() + 6);
+    const rangeIsTo = eval(d1.getMonth()+1) +"/" + d1.getDate() + "/" + d1.getFullYear();
+    
+    console.log(rangeIsFrom + " to " + rangeIsTo);
+
+  } else if(unit == 'day') {
+
+  } else if(unit == 'minute') {
+
+  }
+}
+
+const setFileDuration = (duration, unit) => {
+
+  const date_provided = new Date().setMinutes(new Date().getMinutes() + 1);
+  console.log(date_provided)
+
+  const time_remaining = (date_provided) => new Date(date_provided) - new Date();
+  console.log(time_remaining)
+
+  let timeOuts = []; // We create an array of timeouts in case we want to cancel one later
+  const timer = setTimeout(() => remove(key), time_remaining(date_provided));
+  timeOuts.push(timer);
+
+}
+
+const set = (key, content) => {
   const dirpath = process.cwd() + `/cache`;
 
   if (!fs.existsSync(dirpath)) {
@@ -112,15 +174,6 @@ const multiSet = (items) => {
         if (err) throw err;
         return console.log("The file was succesfully saved!");
       });
-
-      const date_provided = new Date().setMinutes(new Date().getMinutes() + 1);
-      console.log(date_provided)
-      const time_remaining = (date_provided) => new Date(date_provided) - new Date();
-      console.log(time_remaining)
-
-      let timeOuts = []; // We create an array of timeouts in case we want to cancel one later
-      const timer = setTimeout(() => removeAll(), time_remaining(date_provided));
-      timeOuts.push(timer);
     })
   } else {
     throw console.error('Please provide list of array items');
@@ -152,4 +205,3 @@ const removeAll = () => {
     }
   });
 }
-
