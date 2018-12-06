@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 const path = require('path');
 
@@ -26,7 +25,7 @@ const isExist = (key) => {
 }
 
 const get = (key) => {
-
+  
   const exist = isExist(key);
 
   if (exist) {
@@ -41,7 +40,6 @@ const get = (key) => {
 
       reject(new Error('Something wrong!'));
     });
-
     return promise;
   } else {
     return null;
@@ -66,22 +64,36 @@ const multiGet = (keys) => {
 
         new Promise((resolve, reject) => {
 
-          arrs.push(Object.assign({ key: key, value: resolve(data) }));
+          arrs.push(Object.assign({
+            key: key,
+            value: resolve(data)
+          }));
 
           reject(new Error('Something wrong!'));
+
         });
 
       } else {
-        arrs.push(Object.assign({ key: key, value: null }));
+        arrs.push(Object.assign({
+          key: key,
+          value: null
+        }));
       }
     })
 
     return arrs;
 
   } else {
+
     throw console.error('Please provide list of array keys');
+
   }
 }
+
+Date.prototype.getWeek = function() {
+  var dt = new Date(this.getFullYear(),0,1);
+  return Math.ceil((((this - dt) / 86400000) + dt.getDay()+1)/7);
+};
 
 const timeRemaining = (num, unit) => {
 
@@ -97,38 +109,29 @@ const timeRemaining = (num, unit) => {
   // var diffDays = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
 
 
-  if(unit == 'year') {
+  if (unit == 'year') {
 
     expireDate = current.setFullYear(current.getFullYear() + num);
 
     console.log(expireDate)
 
-  } else if(unit == 'month') {
+  } else if (unit == 'month') {
 
     expireDate = current.setMonth(current.getMonth() + num);
 
     console.log(expireDate)
 
-  } else if(unit == 'week') {
-
-    console.log(current);
+  } else if (unit == 'week') {
 
     const thisWeek = current.getWeek();
 
-    console.log(thisWeek);
+    current.setDate(current.getDate() + eval(7 * num));
 
-    const futureWeek = eval(num - thisWeek);
-    current.setDate(current.getDate() + eval(7 * futureWeek));
-    
-    const rangeIsFrom = eval(d1.getMonth()+1) +"/" + d1.getDate() + "/" + d1.getFullYear();
-    d1.setDate(d1.getDate() + 6);
-    const rangeIsTo = eval(d1.getMonth()+1) +"/" + d1.getDate() + "/" + d1.getFullYear();
-    
-    console.log(rangeIsFrom + " to " + rangeIsTo);
+    return eval(current.getMonth() + 1) + "/" + current.getDate() + "/" + current.getFullYear();
 
-  } else if(unit == 'day') {
+  } else if (unit == 'day') {
 
-  } else if(unit == 'minute') {
+  } else if (unit == 'minute') {
 
   }
 }
@@ -147,7 +150,7 @@ const setFileDuration = (duration, unit) => {
 
 }
 
-const set = (key, content) => {
+const set = (key, content, duration) => {
   const dirpath = process.cwd() + `/cache`;
 
   if (!fs.existsSync(dirpath)) {
@@ -162,6 +165,7 @@ const set = (key, content) => {
 
 const multiSet = (items) => {
   if (isArray(items)) {
+
     items.map(item => {
 
       const dirpath = process.cwd() + `/cache`;
@@ -175,13 +179,13 @@ const multiSet = (items) => {
         return console.log("The file was succesfully saved!");
       });
     })
+
   } else {
     throw console.error('Please provide list of array items');
   }
 }
 
 const remove = (key) => {
-
   const filepath = process.cwd() + `/cache/` + key;
 
   fs.unlink(filepath, (err) => {
@@ -192,7 +196,6 @@ const remove = (key) => {
 }
 
 const removeAll = () => {
-
   const filepath = process.cwd() + `/cache`;
 
   fs.readdir(filepath, (err, files) => {
